@@ -1,0 +1,9 @@
+{
+    "autoload": {
+        "psr-4": {"Harvest\\": "src/"}
+    },
+    "require": {
+        "doctrine/annotations": "^1.13",
+        "spatie/enum": "^2.3.8"
+    }
+}
