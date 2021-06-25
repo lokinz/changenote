@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Harvest\ChangeNote\Annotations;
+namespace Harvest\ChangeNote\ChangeTypes;
 
 /** @Annotation  */
 class PropertyName

@@ -5,8 +5,7 @@ namespace Harvest\ChangeNote;
 
 
 use Doctrine\Common\Annotations\AnnotationReader;
-use Harvest\ChangeNote\Annotations\ChangeValue;
-use Harvest\ChangeNote\Annotations\PropertyName;
+use Harvest\ChangeNote\ChangeTypes;
 use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
@@ -68,13 +67,9 @@ class ChangeParser
 
         $changeValue = $this->getChangeValue($property);
 
-        var_dump($changeValue);
-
         if (null === $changeValue) {
             return $change;
         }
-
-        var_dump($changeValue);
 
         $change->from = $changeValue->getValue($before->{$propertyName});
         $change->to = $changeValue->getValue($after->{$propertyName});
@@ -82,13 +77,15 @@ class ChangeParser
         return $change;
     }
 
-    private function getChangeName(ReflectionProperty $reflection): ?PropertyName
+    private function getChangeName(ReflectionProperty $reflection): ?ChangeTypes\PropertyName
     {
-        return $this->annotationReader->getPropertyAnnotation($reflection, PropertyName::class);
+        return $this->annotationReader
+            ->getPropertyAnnotation($reflection, ChangeTypes\PropertyName::class);
     }
 
-    private function getChangeValue(ReflectionProperty $reflection): ?ChangeValue
+    private function getChangeValue(ReflectionProperty $reflection): ?ChangeTypes\ChangeValue
     {
-        return $this->annotationReader->getPropertyAnnotation($reflection, ChangeValue::class);
+        return $this->annotationReader
+            ->getPropertyAnnotation($reflection, ChangeTypes\ChangeValue::class);
     }
 }

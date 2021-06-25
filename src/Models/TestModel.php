@@ -4,14 +4,14 @@
 namespace Harvest\Models;
 
 
-use Harvest\ChangeNote\Annotations\Generic;
-use Harvest\ChangeNote\Annotations\PropertyName;
+use Harvest\ChangeNote\ChangeTypes;
+
 
 class TestModel
 {
     /**
-     * @PropertyName(name="IP Address")
-     * @Generic()
+     * @ChangeTypes\PropertyName(name="IP Address")
+     * @ChangeTypes\Generic()
      */
     public $ip = '192.168.0.100';
 }
