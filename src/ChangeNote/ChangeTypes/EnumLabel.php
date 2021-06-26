@@ -19,6 +19,10 @@ class EnumLabel extends ChangeValue
 
     public function getValue($value): string
     {
+        if(is_a($value, Enum::class)){
+            return $value->getName();
+        }
+
         try {
             /** @var Enum $enum */
             $enum = $this->enumClass::make($value);

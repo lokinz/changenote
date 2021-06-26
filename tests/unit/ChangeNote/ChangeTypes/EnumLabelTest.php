@@ -21,20 +21,51 @@ class EnumLabelTest extends TestCase
              * @ChangeTypes\PropertyName(name="Test Bool")
              * @ChangeTypes\EnumLabel(enumClass="Harvest\Enums\SendStatus")
              */
-            public $testEnum = 0;
+            public $testEnum;
+
+            public function __construct()
+            {
+                $this->testEnum = SendStatus::IDLE();
+            }
         };
     }
 
-    public function testExpectedChangeValue()
+    public function testParsesEnumObject()
     {
         $beforeModel = $this->getNewTestModel();
         $afterModel = $this->getNewTestModel();
 
-        $afterModel->testEnum = 1;
+        $afterModel->testEnum = SendStatus::PENDING();
 
         $changes = $this->changeParser->getChanges($beforeModel, $afterModel);
 
-        self::assertSame(SendStatus::make($beforeModel->testEnum)->getName(), $changes[0]->from);
+        self::assertSame($beforeModel->testEnum->getName(), $changes[0]->from);
+        self::assertSame($afterModel->testEnum->getName(), $changes[0]->to);
+    }
+
+    public function testParsesEnumName()
+    {
+        $beforeModel = $this->getNewTestModel();
+        $afterModel = $this->getNewTestModel();
+
+        $afterModel->testEnum = SendStatus::PENDING()->getName();
+
+        $changes = $this->changeParser->getChanges($beforeModel, $afterModel);
+
+        self::assertSame($beforeModel->testEnum->getName(), $changes[0]->from);
+        self::assertSame($afterModel->testEnum, $changes[0]->to);
+    }
+
+    public function testParsesEnumValue()
+    {
+        $beforeModel = $this->getNewTestModel();
+        $afterModel = $this->getNewTestModel();
+
+        $afterModel->testEnum = SendStatus::PENDING()->getValue();
+
+        $changes = $this->changeParser->getChanges($beforeModel, $afterModel);
+
+        self::assertSame($beforeModel->testEnum->getName(), $changes[0]->from);
         self::assertSame(SendStatus::make($afterModel->testEnum)->getName(), $changes[0]->to);
     }
 }
