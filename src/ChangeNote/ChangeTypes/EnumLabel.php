@@ -6,7 +6,10 @@ namespace Harvest\ChangeNote\ChangeTypes;
 use Spatie\Enum\Enum;
 use Throwable;
 
-/** @Annotation */
+/**
+ * @Annotation
+ * @Target("PROPERTY")
+ */
 class EnumLabel extends ChangeValue
 {
     /** @var Enum */

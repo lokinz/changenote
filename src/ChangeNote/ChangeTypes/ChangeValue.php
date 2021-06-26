@@ -3,7 +3,10 @@
 
 namespace Harvest\ChangeNote\ChangeTypes;
 
-/** @Annotation  */
+/**
+ * @Annotation
+ * @Target("PROPERTY")
+ */
 abstract class ChangeValue
 {
     abstract public function getValue($value);

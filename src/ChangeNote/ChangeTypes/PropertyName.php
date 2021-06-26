@@ -3,7 +3,10 @@
 
 namespace Harvest\ChangeNote\ChangeTypes;
 
-/** @Annotation  */
+/**
+ * @Annotation
+ * @Target("PROPERTY")
+ */
 class PropertyName
 {
     private $name;
