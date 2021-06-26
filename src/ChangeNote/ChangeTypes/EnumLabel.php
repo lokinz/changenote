@@ -15,7 +15,6 @@ class EnumLabel extends ChangeValue
     public function __construct(array $values)
     {
         $this->enumClass = $values['enumClass'];
-        var_dump($values);
     }
 
     public function getValue($value): string

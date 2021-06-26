@@ -25,7 +25,7 @@ class ChangeParser
     }
 
     /**
-     * @throws ReflectionException
+     * @throws InvalidArgumentException|ReflectionException
      */
     public function getChanges($before, $after): array
     {
