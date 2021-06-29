@@ -52,11 +52,17 @@ class ChangeParser
     {
         $propertyName = $property->getName();
 
-        if ($before->{$propertyName} === $after->{$propertyName}) {
+        if ($before->{$propertyName} == $after->{$propertyName}) { //non strict for array comparison
             return null;
         }
 
-        $change = new Change();
+        $changeValue = $this->getChangeValue($property);
+
+        if (is_a($changeValue, ChangeTypes\Collection::class)){
+            return $this->processCollection($property, $before, $after);
+        }
+
+        $change = new ChangeNote();
 
         $changeName = $this->getChangeName($property);
         if (null === $changeName) {
@@ -64,8 +70,6 @@ class ChangeParser
         }
 
         $change->name = $changeName->getName();
-
-        $changeValue = $this->getChangeValue($property);
 
         if (null === $changeValue) {
             return $change;
@@ -87,5 +91,66 @@ class ChangeParser
     {
         return $this->annotationReader
             ->getPropertyAnnotation($reflection, ChangeTypes\ChangeValue::class);
+    }
+
+    private function processCollection(ReflectionProperty $property, $before, $after): ?CollectionChange
+    {
+        $change = new CollectionChange();
+
+        $changeName = $this->getChangeName($property);
+        if (null === $changeName) {
+            return null;
+        }
+        $change->name = $changeName->getName();
+
+        $propertyName = $property->getName();
+
+        $beforeCollection = $before->{$propertyName};
+        $afterCollection = $after->{$propertyName};
+
+        $idKey = $this->getChangeValue($property)->getValue($after);
+
+        $change->added = $this->getAdded($idKey, $beforeCollection, $afterCollection);
+        $change->removed = $this->getRemoved($beforeCollection, $afterCollection);
+
+        $possibleChanges = array_diff_key($afterCollection, $change->added);
+        $beforeKeys = [];
+
+        foreach ($beforeCollection as $item) {
+            $beforeKeys[$item->{$idKey}] = $item;
+        }
+
+        foreach ($possibleChanges as $item){
+            if(!isset($beforeKeys[$item->{$idKey}])) {
+                continue;
+            }
+
+            foreach ($this->getChanges($beforeKeys[$item->{$idKey}], $item) as $changeItem){
+                $change->changes[] = $changeItem;
+            }
+        }
+
+        return $change;
+    }
+
+    private function getAdded($idKey, $before, $after): array
+    {
+       $added = [];
+
+        foreach ($after as $k => $item){
+            if(null === $item->{$idKey}){
+                $added[] = $item;
+                unset($after[$k]);
+            }
+        }
+
+        $added = array_merge($added, array_diff_key($after, $before));
+        return array_values($added);
+    }
+
+    private function getRemoved($before, $after): array
+    {
+        $removed = array_diff_key($before, $after);
+        return array_values($removed);
     }
 }
