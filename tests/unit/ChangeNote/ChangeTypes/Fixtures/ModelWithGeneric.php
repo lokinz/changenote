@@ -7,6 +7,8 @@ use Harvest\ChangeNote\ChangeTypes;
 
 class ModelWithGeneric
 {
+    public $id;
+
     /**
      * @ChangeTypes\PropertyName(name="Name")
      * @ChangeTypes\Generic

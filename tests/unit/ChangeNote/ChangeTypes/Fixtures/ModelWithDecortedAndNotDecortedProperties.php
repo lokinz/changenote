@@ -7,6 +7,7 @@ use Harvest\ChangeNote\ChangeTypes;
 
 class ModelWithDecortedAndNotDecortedProperties
 {
+    public $id;
     /**
      * @ChangeTypes\PropertyName(name="Get Schwifty!")
      * @ChangeTypes\Generic

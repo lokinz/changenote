@@ -7,6 +7,7 @@ use Harvest\ChangeNote\ChangeTypes;
 
 class ModelWithBoolLabel
 {
+    public $id;
 
     /**
      * @ChangeTypes\PropertyName(name="Test Bool")

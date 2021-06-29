@@ -7,6 +7,8 @@ use Harvest\ChangeNote\ChangeTypes;
 
 class ModelWithEnum
 {
+    public $id;
+
     /**
      * @ChangeTypes\PropertyName(name="Test Bool")
      * @ChangeTypes\EnumLabel(enumClass="Harvest\Tests\unit\ChangeNote\ChangeTypes\Fixtures\TestEnum")
