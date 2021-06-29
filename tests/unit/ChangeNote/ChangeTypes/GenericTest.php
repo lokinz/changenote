@@ -2,26 +2,21 @@
 
 namespace Harvest\Tests\unit\ChangeNote\ChangeTypes;
 
-use Harvest\ChangeNote\ChangeTypes;
+
 use Harvest\Tests\unit\ChangeNote\ChangeNoteParserSetup;
+use Harvest\Tests\unit\ChangeNote\ChangeTypes\Fixtures\ModelWithGeneric;
 use PHPUnit\Framework\TestCase;
 
 class GenericTest extends TestCase
 {
     use ChangeNoteParserSetup;
 
-    public function getNewTestModel()
+    public function getNewTestModel(): ModelWithGeneric
     {
-        return new class {
-            /**
-             * @ChangeTypes\PropertyName(name="Name")
-             * @ChangeTypes\Generic
-             */
-            public $name = 'foo';
-        };
+        return new ModelWithGeneric();
     }
 
-    public function testExpectedChangeValue()
+    public function testExpectedChangeValue(): void
     {
         $beforeModel = $this->getNewTestModel();
         $afterModel = $this->getNewTestModel();
