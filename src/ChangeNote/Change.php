@@ -4,9 +4,10 @@
 namespace Harvest\ChangeNote;
 
 
-class Change
+abstract class Change
 {
-    public $name = 'Unknown';
-    public $from = 'Unknown';
-    public $to = 'Unknown';
+    public const NOTE = 'note';
+    public const COLLECTION = 'collection';
+
+    public $type;
 }
