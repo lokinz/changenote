@@ -6,7 +6,9 @@ use Harvest\ChangeNote\CollectionChange;
 use Harvest\Tests\unit\ChangeNote\ChangeNoteParserSetup;
 use Harvest\Tests\unit\ChangeNote\ChangeTypes\Fixtures\ModelWithCollections;
 use Harvest\Tests\unit\ChangeNote\ChangeTypes\Fixtures\ModelWithGeneric;
+use Harvest\Tests\unit\ChangeNote\ChangeTypes\Fixtures\ModelWithNoId;
 use Harvest\Tests\unit\ChangeNote\ChangeTypes\Fixtures\TestEnum;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 class CollectionTest extends TestCase
@@ -31,6 +33,35 @@ class CollectionTest extends TestCase
         $changes = $this->changeParser->getChanges($beforeModel, $afterModel);
 
         self::assertInstanceOf(CollectionChange::class, $changes[0]);
+    }
+
+    public function testThrowsExceptionIfIdKeyMissing(): void
+    {
+        $beforeModel = $this->getNewTestModel();
+        $afterModel = $this->getNewTestModel();
+
+        $beforeModel->genericCollection[0] = new ModelWithNoId();
+
+        $afterModel->genericCollection[0] = new ModelWithNoId();
+        $afterModel->genericCollection[0]->name = 'Changed Name';
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->changeParser->getChanges($beforeModel, $afterModel);
+
+    }
+
+    public function testThrowsExceptionIfIdKeySetIncorrectly(): void
+    {
+        $beforeModel = $this->getNewTestModel();
+        $afterModel = $this->getNewTestModel();
+
+        unset($afterModel->genericCollectionWithIncorrectIdKey[0]);
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->changeParser->getChanges($beforeModel, $afterModel);
+
     }
 
     public function testGetsAddedItemToExistingCollection(): void

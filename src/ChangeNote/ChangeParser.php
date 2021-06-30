@@ -58,7 +58,7 @@ class ChangeParser
 
         $changeValue = $this->getChangeValue($property);
 
-        if (is_a($changeValue, ChangeTypes\Collection::class)){
+        if (is_a($changeValue, ChangeTypes\Collection::class)) {
             return $this->processCollection($property, $before, $after);
         }
 
@@ -110,6 +110,8 @@ class ChangeParser
 
         $idKey = $this->getChangeValue($property)->getValue($after);
 
+        $this->validateIdKey($idKey, $beforeCollection, $afterCollection);
+
         $change->added = $this->getAdded($idKey, $beforeCollection, $afterCollection);
         $change->removed = $this->getRemoved($beforeCollection, $afterCollection);
 
@@ -120,12 +122,12 @@ class ChangeParser
             $beforeKeys[$item->{$idKey}] = $item;
         }
 
-        foreach ($possibleChanges as $item){
-            if(!isset($beforeKeys[$item->{$idKey}])) {
+        foreach ($possibleChanges as $item) {
+            if (!isset($beforeKeys[$item->{$idKey}])) {
                 continue;
             }
 
-            foreach ($this->getChanges($beforeKeys[$item->{$idKey}], $item) as $changeItem){
+            foreach ($this->getChanges($beforeKeys[$item->{$idKey}], $item) as $changeItem) {
                 $change->changes[] = $changeItem;
             }
         }
@@ -135,10 +137,10 @@ class ChangeParser
 
     private function getAdded($idKey, $before, $after): array
     {
-       $added = [];
+        $added = [];
 
-        foreach ($after as $k => $item){
-            if(null === $item->{$idKey}){
+        foreach ($after as $k => $item) {
+            if (null === $item->{$idKey}) {
                 $added[] = $item;
                 unset($after[$k]);
             }
@@ -152,5 +154,30 @@ class ChangeParser
     {
         $removed = array_diff_key($before, $after);
         return array_values($removed);
+    }
+
+    private function validateIdKey($idKey, $beforeCollection, $afterCollection): void
+    {
+        if (count($beforeCollection) > 0) {
+            $this->testForIdKey($idKey, $beforeCollection[0]);
+            return;
+        }
+
+        if (count($afterCollection) > 0) {
+            $this->testForIdKey($idKey, $afterCollection[0]);
+        }
+    }
+
+    private function testForIdKey($idKey, $object): void
+    {
+        if (!property_exists($object, $idKey)) {
+            $message = sprintf(
+                'IdKey "%s" not found on object "%s"',
+                $idKey,
+                get_class($object)
+            );
+
+            throw new InvalidArgumentException($message);
+        }
     }
 }
