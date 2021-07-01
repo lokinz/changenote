@@ -117,13 +117,11 @@ class ChangeParser
         $idKey = $this->getChangeValue($property)->getValue($after);
         $this->validateIdKey($idKey, $beforeCollection, $afterCollection);
 
-        $change->added = $this->getCollectionAdded($idKey, $beforeCollection, $afterCollection);
-
         $keyedBeforeCollection = $this->collectionByIdKey($idKey, $beforeCollection);
         $keyedAfterCollection = $this->collectionByIdKey($idKey, $afterCollection);
 
-        $change->removed = $this->getCollectionRemoved($keyedBeforeCollection, $afterCollection);
-
+        $change->added = $this->getCollectionAdded($idKey, $keyedBeforeCollection, $afterCollection);
+        $change->removed = $this->getCollectionRemoved($keyedBeforeCollection, $keyedAfterCollection);
         $change->changes = $this->getCollectionChanges($idKey, $keyedBeforeCollection, $keyedAfterCollection);
 
         return $change;
@@ -131,16 +129,10 @@ class ChangeParser
 
     private function getCollectionAdded($idKey, $before, $after): array
     {
-        $added = [];
+        $added = array_filter($after, static function ($item) use ($idKey, $before) {
+            return null === $item->{$idKey} || !isset($before[$item->{$idKey}]);
+        });
 
-        foreach ($after as $k => $item) {
-            if (null === $item->{$idKey}) {
-                $added[] = $item;
-                unset($after[$k]);
-            }
-        }
-
-        $added = array_merge($added, array_diff_key($after, $before));
         return array_values($added);
     }
 
