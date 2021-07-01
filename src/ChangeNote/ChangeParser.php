@@ -48,6 +48,9 @@ class ChangeParser
         return $changes;
     }
 
+    /**
+     * @throws ReflectionException
+     */
     private function processChange(ReflectionProperty $property, $before, $after): ?Change
     {
         $propertyName = $property->getName();
@@ -93,6 +96,9 @@ class ChangeParser
             ->getPropertyAnnotation($reflection, ChangeTypes\ChangeValue::class);
     }
 
+    /**
+     * @throws ReflectionException
+     */
     private function processCollection(ReflectionProperty $property, $before, $after): ?CollectionChange
     {
         $change = new CollectionChange();
@@ -109,33 +115,21 @@ class ChangeParser
         $afterCollection = $after->{$propertyName};
 
         $idKey = $this->getChangeValue($property)->getValue($after);
-
         $this->validateIdKey($idKey, $beforeCollection, $afterCollection);
 
-        $change->added = $this->getAdded($idKey, $beforeCollection, $afterCollection);
-        $change->removed = $this->getRemoved($beforeCollection, $afterCollection);
+        $change->added = $this->getCollectionAdded($idKey, $beforeCollection, $afterCollection);
 
-        $possibleChanges = array_diff_key($afterCollection, $change->added);
-        $beforeKeys = [];
+        $keyedBeforeCollection = $this->collectionByIdKey($idKey, $beforeCollection);
+        $keyedAfterCollection = $this->collectionByIdKey($idKey, $afterCollection);
 
-        foreach ($beforeCollection as $item) {
-            $beforeKeys[$item->{$idKey}] = $item;
-        }
+        $change->removed = $this->getCollectionRemoved($keyedBeforeCollection, $afterCollection);
 
-        foreach ($possibleChanges as $item) {
-            if (!isset($beforeKeys[$item->{$idKey}])) {
-                continue;
-            }
-
-            foreach ($this->getChanges($beforeKeys[$item->{$idKey}], $item) as $changeItem) {
-                $change->changes[] = $changeItem;
-            }
-        }
+        $change->changes = $this->getCollectionChanges($idKey, $keyedBeforeCollection, $keyedAfterCollection);
 
         return $change;
     }
 
-    private function getAdded($idKey, $before, $after): array
+    private function getCollectionAdded($idKey, $before, $after): array
     {
         $added = [];
 
@@ -150,7 +144,7 @@ class ChangeParser
         return array_values($added);
     }
 
-    private function getRemoved($before, $after): array
+    private function getCollectionRemoved($before, $after): array
     {
         $removed = array_diff_key($before, $after);
         return array_values($removed);
@@ -180,4 +174,39 @@ class ChangeParser
             throw new InvalidArgumentException($message);
         }
     }
+
+    private function collectionByIdKey($idKey, $collection): array
+    {
+        $keyedCollection = [];
+
+        foreach ($collection as $item) {
+            if(null === $item->{$idKey}){
+                continue;
+            }
+            $keyedCollection[$item->{$idKey}] = $item;
+        }
+
+        return $keyedCollection;
+    }
+
+    /**
+     * @throws ReflectionException
+     */
+    private function getCollectionChanges($idKey, $beforeCollection,  $afterCollection): array
+    {
+        $changes = [];
+
+        foreach ($afterCollection as $item) {
+            if (!isset($beforeCollection[$item->{$idKey}])) {
+                continue;
+            }
+
+            foreach ($this->getChanges($beforeCollection[$item->{$idKey}], $item) as $changeItem) {
+                $changes[] = $changeItem;
+            }
+        }
+
+        return $changes;
+    }
+
 }

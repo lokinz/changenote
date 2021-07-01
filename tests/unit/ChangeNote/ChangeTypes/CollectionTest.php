@@ -237,4 +237,48 @@ class CollectionTest extends TestCase
         self::assertSame($collectionModel2->emptyCollection[0]->name, $modelChanges[0]->to);
 
     }
+
+    public function testGetsAddedItemsRemovedItemsAndChangesInCollection(): void
+    {
+        $beforeModel = $this->getNewTestModel();
+        $afterModel = $this->getNewTestModel();
+
+        $existingModel = new ModelWithGeneric();
+        $existingModel->id = 1;
+        $existingModel->name = 'Existing Model';
+
+        $changedModel = new ModelWithGeneric();
+        $changedModel->id = 1;
+        $changedModel->name = 'Changed Model';
+
+        $addedModel = new ModelWithGeneric();
+        $addedModel->id = null;
+        $addedModel->name = 'Added Model';
+
+        $removedModel = new ModelWithGeneric();
+        $removedModel->id = 2;
+        $removedModel->name = 'Removed Model';
+
+        $beforeModel->emptyCollection[] = $existingModel;
+        $beforeModel->emptyCollection[] = $removedModel;
+
+        $afterModel->emptyCollection[] = $changedModel;
+        $afterModel->emptyCollection[] = $addedModel;
+
+        $changes = $this->changeParser->getChanges($beforeModel, $afterModel);
+
+        self::assertCount(1, $changes, 'One change should be detected');
+
+        /** @var CollectionChange $collectionChange */
+        $collectionChange = $changes[0];
+
+        self::assertCount(1, $collectionChange->added, 'One item should be added');
+        self::assertCount(1, $collectionChange->removed, 'One item should be removed');
+        self::assertCount(1, $collectionChange->changes, 'One item should have changed');
+
+        self::assertSame($addedModel->name, $collectionChange->added[0]->name);
+        self::assertSame($removedModel->name, $collectionChange->removed[0]->name);
+        self::assertSame($changedModel->name, $collectionChange->changes[0]->to);
+    }
+
 }
